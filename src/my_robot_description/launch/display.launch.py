@@ -16,7 +16,7 @@ def generate_launch_description():
 
     robot_model_arg = DeclareLaunchArgument(
         'robot_model',
-        default_value='rubot/rubot_mecanum.urdf',
+        default_value='robot_arm/my_simple_robot.urdf',
         description='Robot model path relative to urdf/ folder'
     )
 
@@ -48,8 +48,8 @@ def generate_launch_description():
     )
 
     joint_state_publisher_gui_node = Node(
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
+        package="joint_state_publisher",
+        executable="joint_state_publisher",
         parameters=[
             {'use_sim_time': use_sim_time}
         ]
