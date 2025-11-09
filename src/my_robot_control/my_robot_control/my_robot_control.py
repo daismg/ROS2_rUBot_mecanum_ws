@@ -64,15 +64,15 @@ class RobotController(Node):
 
 def main():
     rclpy.init()
-    rubot = RobotController()
+    rubot1_controller = RobotController()
     try:
-        rclpy.spin(rubot)
+        rclpy.spin(rubot1_controller)
     except KeyboardInterrupt:
         # ROS2 is already stopped and I can not execute any more functions
         # if elapsed time is not reached, the robot will not stop
         pass
     finally:
-        rubot.destroy_node()
+        rubot1_controller.destroy_node()
 
 if __name__ == '__main__':
     main()

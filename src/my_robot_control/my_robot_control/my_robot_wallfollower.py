@@ -74,7 +74,7 @@ class WallFollower(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = WallFollower()
-    rclpy.spin(node)
-    node.destroy_node()
+    rubot = WallFollower()
+    rclpy.spin(rubot)
+    rubot.destroy_node()
     rclpy.shutdown()

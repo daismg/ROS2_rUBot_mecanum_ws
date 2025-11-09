@@ -71,7 +71,7 @@ class LidarTest(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = LidarTest()
-    rclpy.spin(node)
-    node.destroy_node()
+    lidar1_test = LidarTest()
+    rclpy.spin(lidar1_test)
+    lidar1_test.destroy_node()
     rclpy.shutdown()
