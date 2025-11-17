@@ -11,11 +11,11 @@ class RobotSelfControl(Node):
         super().__init__('robot_selfcontrol_node')
 
         # Configurable parameters
-        self.declare_parameter('distance_laser', 0.3)
-        self.declare_parameter('speed_factor', 1.0)
+        self.declare_parameter('distance_laser', 0.3) # En m (30cm)
+        self.declare_parameter('speed_factor', 1.0) 
         self.declare_parameter('forward_speed', 0.2)
         self.declare_parameter('rotation_speed', 0.3)
-        self.declare_parameter('time_to_stop', 5.0)
+        self.declare_parameter('time_to_stop', 20.0)
 
         self._distanceLaser = self.get_parameter('distance_laser').value
         self._speedFactor = self.get_parameter('speed_factor').value
@@ -101,13 +101,13 @@ class RobotSelfControl(Node):
             self._last_info_time = now
 
         # React to obstacle
-        if closest_distance < self._distanceLaser:
+        if closest_distance < self._distanceLaser: # Accions al detectar obstacle més proper.
             if zone == "FRONT":
-                self._msg.linear.x = 0.0
-                self._msg.angular.z = 0.0
+                self._msg.linear.x = 0.0 # Obstacle en front, tirar enrere
+                self._msg.angular.z = 0.0 # Girar
             elif zone == "LEFT":
-                self._msg.linear.x = 0.0
-                self._msg.angular.z = -self._rotationSpeed * self._speedFactor
+                self._msg.linear.x = 0.0 
+                self._msg.angular.z = -self._rotationSpeed * self._speedFactor 
             elif zone == "RIGHT":
                 self._msg.linear.x = 0.0
                 self._msg.angular.z = self._rotationSpeed * self._speedFactor
