@@ -11,7 +11,7 @@ class RobotSelfControl(Node):
         super().__init__('robot_selfcontrol_node')
 
         # Configurable parameters
-        self.declare_parameter('distance_laser', 0.3) # En m (30cm)
+        self.declare_parameter('distance_laser', 0.15) # En m (25cm)
         self.declare_parameter('speed_factor', 1.0) 
         self.declare_parameter('forward_speed', 0.2)
         self.declare_parameter('rotation_speed', 0.3)
@@ -82,11 +82,15 @@ class RobotSelfControl(Node):
         angle_closest_deg = angle_min_deg + element_index * angle_increment_deg
 
         # Determine zone
-        if -45 <= angle_closest_deg <= 45:
+        if -70 <= angle_closest_deg < -5:
+            zone = "FRONT_RIGHT"
+        elif -5 <= angle_closest_deg < 5:
             zone = "FRONT"
-        elif 45 < angle_closest_deg <= 110:
+        elif 5 <= angle_closest_deg <= 70:
+            zone = "FRONT_LEFT" 
+        elif 70 < angle_closest_deg <= 110:
             zone = "LEFT"
-        elif -110 <= angle_closest_deg < -45:
+        elif -110 <= angle_closest_deg < -70:
             zone = "RIGHT"
         elif 110 < angle_closest_deg <= 150:
             zone = "BACK_LEFT"
@@ -102,14 +106,20 @@ class RobotSelfControl(Node):
 
         # React to obstacle
         if closest_distance < self._distanceLaser: # Accions al detectar obstacle més proper.
-            if zone == "FRONT":
-                self._msg.linear.x = 0.0 # Obstacle en front, tirar enrere
-                self._msg.angular.z = 0.0 # Girar
+            if zone == "FRONT_RIGHT":
+                self._msg.linear.x = -self._forwardSpeed * self._speedFactor # Obstacle en front, tirar enrere
+                self._msg.angular.z = self._rotationSpeed * self._speedFactor # Girar
+            elif zone == "FRONT":
+                self._msg.linear.x = -self._forwardSpeed * self._speedFactor # Obstacle en front, tirar enrere
+                self._msg.angular.z = 0.0
+            elif zone == "FRONT_LEFT":
+                self._msg.linear.x = -self._forwardSpeed * self._speedFactor # Obstacle en front, tirar enrere
+                self._msg.angular.z = -self._rotationSpeed * self._speedFactor # Girar
             elif zone == "LEFT":
-                self._msg.linear.x = 0.0 
-                self._msg.angular.z = -self._rotationSpeed * self._speedFactor 
+                self._msg.linear.x = self._forwardSpeed * self._speedFactor
+                self._msg.angular.z = -self._rotationSpeed * self._speedFactor
             elif zone == "RIGHT":
-                self._msg.linear.x = 0.0
+                self._msg.linear.x = self._forwardSpeed * self._speedFactor
                 self._msg.angular.z = self._rotationSpeed * self._speedFactor
             elif zone in ["BACK_LEFT", "BACK_RIGHT"]:
                 self._msg.linear.x = self._forwardSpeed * self._speedFactor
