@@ -11,8 +11,8 @@ class WallFollower(Node):
         super().__init__('wall_follower_node')
 
         # Parameters
-        self.declare_parameter('distance_limit', 0.5)    # desired distance to right wall
-        self.declare_parameter('forward_speed', 0.20)    # linear speed
+        self.declare_parameter('distance_limit', 0.30)    # desired distance to right wall
+        self.declare_parameter('forward_speed', 0.40)    # linear speed
         self.declare_parameter('turn_speed', 0.40)       # angular speed
         self.declare_parameter('time_to_stop', 30.0)     # auto-stop
         self.declare_parameter('tolerance', 0.05)        # band around base_distance (RIGHT)
@@ -138,8 +138,8 @@ class WallFollower(Node):
         #----------------------------------------------------------
         if min_front < self.base_distance:
             twist.linear.x = 0.0
-            twist.linear.y = 0.0
-            twist.angular.z = self.v_ang * 2.0
+            twist.linear.y = self.v_lin*0.5
+            twist.angular.z = self.v_ang * 0.0
             action = f"FRONT {min_front:.2f} m → turn LEFT"
 
         #----------------------------------------------------------
@@ -224,6 +224,18 @@ class WallFollower(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = WallFollower()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.stop()
+    finally:
+        try:
+            node.destroy_node()
+        except Exception:
+            pass
+
+        if rclpy.ok():
+            rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

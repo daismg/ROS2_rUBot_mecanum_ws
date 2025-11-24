@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- ========================
+         Launch Arguments
+         ======================== -->
+    <arg name="distance_limit"  default="0.5" />
+    <arg name="tolerance"       default="0.05" />
+    <arg name="forward_speed"   default="0.2" />
+    <arg name="turn_speed"      default="0.3" />
+    <arg name="time_to_stop"    default="80.0" />
+
+    <!-- ========================
+         Node Definition
+         ======================== -->
+    <node
+        pkg="my_robot_control"
+        exec="my_robot_wallfollower_grup4_exec"
+        name="wall_follower_node"
+        output="screen">
+
+        <!-- Pass arguments as parameters -->
+        <param name="distance_limit" value="$(var distance_limit)" />
+        <param name="tolerance" value="$(var tolerance)" />
+        <param name="forward_speed" value="$(var forward_speed)" />
+        <param name="turn_speed" value="$(var turn_speed)" />
+        <param name="time_to_stop" value="$(var time_to_stop)" />
+    </node>
+</launch>
