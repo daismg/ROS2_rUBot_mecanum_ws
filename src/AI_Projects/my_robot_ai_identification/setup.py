@@ -12,8 +12,8 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'config_arg'), glob(os.path.join('config_arg', '*.*'))),
-        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[py|xml]'))),
+        (os.path.join('share', package_name, 'config'), glob(os.path.join('config', '*.*'))),
+        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*.*'))),
         (os.path.join('share', package_name, 'models'), glob(os.path.join('models', '*.*'))),
         (os.path.join('share', package_name, 'photos'), glob(os.path.join('photos', '*.*'))),
     ],
@@ -28,7 +28,8 @@ setup(
         'console_scripts': [
             'take_photo_exec = my_robot_ai_identification.take_photo:main',
             'takePhoto_detectSign_keras_exec = my_robot_ai_identification.takePhoto_detectSign_keras:main',
-            'rt_prediction_yolo_exec = my_robot_ai_identification.rt_prediction_yolo:main',
+            'limo_rt_prediction_yolo_exec = my_robot_ai_identification.limo_rt_prediction_yolo:main',
+            'rubot_navigation_yolo_exec = my_robot_ai_identification.rubot_navigation_yolo:main',
         ],
     },
 )

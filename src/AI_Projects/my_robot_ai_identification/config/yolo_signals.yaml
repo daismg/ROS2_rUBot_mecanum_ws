@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# IMPORTANT:
+# The FIRST line MUST be exactly the node name:
+#     object_detection:
+#
+# The SECOND line MUST be exactly:
+#     ros__parameters:
+#
+# This is REQUIRED by ROS 2 so that parameters are loaded correctly.
+# ---------------------------------------------------------------------------
+
+object_detection:
+  ros__parameters:
+
+    # Name of the YOLOv8 model file (must exist inside the package's "models/" folder)
+    modelYolo: yolov8n_custom.pt
+
+    # Image topic from the RGB camera (2D), typically /image_raw or /camera/color/image_raw
+    topic: /image_raw
+
+    # Frequency (Hz) at which this node publishes /cmd_vel when reacting to a sign.
+    # A higher frequency overrides Nav2's velocity commands temporarily.
+    twist_frequency: 20.0   # Hz
+
+    # Maximum distance (meters) between the robot and a traffic sign
+    # for the detection to be considered valid.
+    # If the robot is farther away, YOLO detections are ignored.
+    front_distance: 0.3     # meters
+
+    # Predefined map positions of traffic signs.
+    # These coordinates MUST be in the same reference frame
+    # as the robot's odometry (/odom) or /map (depending on your setup).
+    #
+    # Usage:
+    #   If YOLO detects a sign AND the robot is within "front_distance"
+    #   of the corresponding sign position, then the robot reacts.
+    #
+    sign_positions: |
+      #STOP:      [2.30, -1.00]   # STOP sign position (x, y)
+      #Ceda:      [5.00,  0.20]   # Yield (Ceda el paso)
+      #Derecha:   [7.10,  1.40]   # Turn right
+      Izquierda: [7.10, -1.40]   # Turn left
+      #Prohibido: [9.00,  0.00]   # No entry / forbidden

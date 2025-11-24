@@ -11,57 +11,6 @@ For this project we have created a new package "my_robot_ai_identification" wher
 - Keras with tensorflow
 - YOLO 
 
-## **1. ROS2 packages installation**
-
-The needed Installation for YOLO identification is only to install "ultralytics" on the ROS2 Humble environment. Open a terminal and type:
-````shell
-pip install ultralytics
-pip3 uninstall numpy
-pip3 install "numpy<2.0"
-````
-
-## **2. Robot Navigation**
-
-To proceed with the signal identification we first bringup the robot and navigate from initial pose to final target.
-
-- Bringup the robot
-    - In simulation:
-    ````shell
-    ros2 launch my_robot_bringup my_robot_bringup_sw.launch.xml use_sim_time:=True x0:=0.5 y0:=-1.5 yaw0:=1.57 robot:=rubot/rubot_mecanum.urdf custom_world:=square4m_sign.world
-    ````
-    >Important: Include a traffic signal in the world. When using "square4m_sign.world" you can change the sign model on line 30 changing the traffic sign model name
-    - In real robot LIMO the bringup is already made when turned on
-
-- Generate a map
-    - In simulation:
-    ````shell
-    ros2 launch my_robot_cartographer cartographer.launch.py use_sim_time:=True
-    ````
-    - In real robot LIMO:
-    ````shell
-    ros2 launch my_robot_cartographer cartographer.launch.py use_sim_time:=False
-    ````
-    - Save the map in my_robot_navigation2/map folder with:
-    ````shell
-    cd src/Navigation_Projects/my_robot_navigation2/map/
-    ros2 run nav2_map_server map_saver_cli -f my_map_yolo
-    ````
-- Navigate using the Map:
-    - In simulation:
-        ````bash
-        ros2 launch my_robot_navigation2 navigation2_robot.launch.py use_sim_time:=True map:=map_square4m_sign.yaml param:=limo_sw.yaml
-        ````
-        >For LIMO: We use "limo_sw.yaml" file. In case we want to priorize the lidar data from odometry data we will use Limo_sw_lidar.yaml
-
-        ![](./Images/07_Yolo/10_nav_sw.png)
-    - In the case of real robot:
-        - Because the bringup is done without the LIMO robot model. The only frames available are
-            - odom: as a ``base_frame_id``
-            - base_link: as the ``robot_base_frame``
-        - We have to create "LIMO_real.yaml" file in "param" folder correcting base_frame_id: "odom" (instead of base_footprint)
-        ````shell
-        ros2 launch my_robot_navigation2 navigation2_robot.launch.py use_sim_time:=False map:=map_square4m_sign.yaml param:=limo_real.yaml
-        ````
 
 ## **3. Model Training**
 
@@ -191,8 +140,3 @@ In TheConstruct environment
         ros2 run my_robot_ai_identification rt_prediction_yolo_exec
         ````
         > You have to change the model path to '/root/ROS2_rUBot_mecanum_ws/src/AI_Projects/my_robot_ai_identification/models/yolov8n_custom.pt
-
-## **5. Robot actuation after prediction**
-
-In TheConstruct environment:
-- Once the traffic signal is identified, the robot has to actuate according to the detected traffic signal when its position is close (i.e. 1m) to the signal.

@@ -225,7 +225,9 @@ The used Gazebo plugin is:
 
 A Lidar sensors is  device that is able to measure the obstacle distances at 360º around the robot. 
 
-He is sending 720 laser beams (2 beams/degree) and measures the distance each laser beam finds an obstacle. He is able to measure from 12cm to 10m. The used Lidar sensor is a 360º RPLidar A1M8. [RPLidar in RoboShop](https://www.robotshop.com/es/es/rplidar-a1m8-kit-desarrollo-escaner-laser-360-grados.html)
+He is sending 720 laser beams (2 beams/degree) and measures the distance each laser beam finds an obstacle. He is able to measure from 12cm to 10m. The used Lidar sensor is a 360º RPLidar A1M8. Review the official documentation:
+- [RPLidar in RoboShop](https://www.robotshop.com/es/es/rplidar-a1m8-kit-desarrollo-escaner-laser-360-grados.html)
+- [Slamtec Support RPLidar A series](https://www.slamtec.com/en/Support#rplidar-a-series)
 
 This lidar is simulated in URDF model as:
 - link with the visual, collision and inertial properties

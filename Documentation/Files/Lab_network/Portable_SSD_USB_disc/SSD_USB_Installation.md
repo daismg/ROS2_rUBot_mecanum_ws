@@ -162,3 +162,18 @@ sudo ~/Desktop/reset_student.sh
 ````
 > if PASSWORD="", you will have to type the new pass for user `student`
 > If you prefer the launcher `reset_student.desktop`, you double-click and you will have to type your admin password.
+
+
+## **Logout github student account**
+ In order to remove git and github credentials from the `student` user, you can type:
+````shell
+git config --global --unset user.name 
+git config --global --unset user.email 
+git config --global --unset credential.helper 
+
+rm -f ~/.git-credentials
+git credential-cache exit 
+gh auth logout -h github.com -y 
+````
+> This can be done with the instruction: `rm -f ~/.gitconfig ~/.git-credentials`
+- Remember to 'Sign out' in VS Code: Settings → Accounts → Sign out from GitHub

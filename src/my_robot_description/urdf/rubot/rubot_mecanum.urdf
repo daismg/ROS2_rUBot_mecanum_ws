@@ -184,7 +184,7 @@
   <!-- LIDAR base_scan -->
   <link name="base_scan">
     <visual>
-      <origin rpy="0 0 3.14" xyz="0 0 0"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="file://$(find my_robot_description)/meshes/rubot/Lidar.stl" scale="0.001 0.001 0.001"/>
         <!--<cylinder length="0.05" radius="0.05"/>-->
@@ -205,7 +205,7 @@
   </link>
   <joint name="scan_joint" type="fixed">
     <axis xyz="0 0 1"/>
-    <origin rpy="0 0 3.14" xyz="0 0 0.14"/>
+    <origin rpy="0 0 0" xyz="0 0 0.14"/>
     <parent link="base_link"/>
     <child link="base_scan"/>
   </joint>
@@ -302,8 +302,8 @@
         <horizontal>
           <samples>720</samples>
           <resolution>1.00000</resolution>
-          <min_angle>0.000000</min_angle>
-          <max_angle>6.280000</max_angle>
+          <min_angle>-3.1416</min_angle>
+          <max_angle>3.1416</max_angle>
         </horizontal>
       </scan>
       <range>

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <!-- Navigation Program   -->
-    <arg name="distance_laser" default="0.4"/>
+    <arg name="distance_limit" default="0.4"/>
     <arg name="speed_factor" default="1.0"/>
     <arg name="forward_speed" default="0.2"/>
     <arg name="backward_speed" default="-0.2"/>
@@ -10,7 +10,7 @@
 
     <node
         pkg="my_robot_control" exec="my_robot_selfcontrol_exec" name="robot_selfcontrol_node" output="screen">
-            <param name="distance_laser" value="$(var distance_laser)"/>
+            <param name="distance_limit" value="$(var distance_limit)"/>
             <param name="speed_factor" value="$(var speed_factor)"/>
             <param name="forward_speed" value="$(var forward_speed)"/>
             <param name="backward_speed" value="$(var backward_speed)"/>

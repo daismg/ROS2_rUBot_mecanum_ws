@@ -11,7 +11,10 @@ The interesting documentation is:
 - https://github.com/westonrobot/limo_ros2_docker/tree/humble
 - https://github.com/ROBOTIS-GIT/turtlebot3/tree/main
 
-SLAM (Simultaneous Localization and Mapping) navigation aims to simultaneously map an unknown environment and localize the robot within it. It generates an optimal trajectory to a specified target point and navigates along this path, continuously updating the map and avoiding obstacles to ensure efficient and autonomous movement.
+SLAM (Simultaneous Localization and Mapping) navigation aims to:
+- simultaneously map an unknown environment and localize the robot within it. 
+- It generates an optimal trajectory to a specified target point and 
+- navigates along this path, continuously updating the map and avoiding obstacles to ensure efficient and autonomous movement.
 
 There are different methods:
 - SLAM gmapping: to create 2D occupancy maps from laser and position data. Ideal for small indoor environments with low scan frequency.
@@ -20,26 +23,30 @@ There are different methods:
 
 ## **4.1. SLAM-Navigation install**
 
-You need first to install the needed packages (already installed in TheConstruct environment):
+You need first to install the needed packages (already installed in TheConstruct environment and also in our custom SSD environment):
 ```shell
 sudo apt update
 sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
 sudo apt install ros-humble-nav2-simple-commander
 sudo apt install ros-humble-tf-transformations
 ```
-We will start to use Turtlebot3 waffle model but later we will adapt our custom robot model
+We have constructed speciffic packages taking the template of equivalent Turtlebot3 project (waffle model):
+- my_robot_cartographer
+- my_robot_navigation2
 
-From Turtlebot3 project we have taken the "turtlebot3_cartographer" and "turtlebot3_navigation2" packages and copy to src folder with the structure:
-- Navigation_Projects
-    - my_robot_cartographer
-    - my_robotnavigation2
-    - my_robot_nav_control
-- This new "my_robot_nav_control" package is created for new navigation control projects using Simple Commander API. This package is created with:
+A new `my_robot_nav_control` package is created for new navigation control projects using Simple Commander API. 
+
+This new `my_robot_nav_control` package is created with:
 ````shell
 ros2 pkg create --build-type ament_python my_robot_nav_control --dependencies rclpy std_msgs sensor_msgs geometry_msgs nav_msgs nav2_simple_commander tf_transformations
 cd ..
 colcon build
 ````
+These 3 packages are organized inside a `Navigation_Projects` subfolder on src folder with the structure:
+- Navigation_Projects
+    - my_robot_cartographer
+    - my_robot_navigation2
+    - my_robot_nav_control
 
 ## **4.2. Generate a Map with SLAM**
 
@@ -49,19 +56,20 @@ colcon build
         ros2 launch my_robot_bringup my_robot_bringup_sw.launch.xml x0:=0.5 y0:=-1.5 yaw0:=1.57 robot:=rubot/rubot_mecanum.urdf custom_world:=square4m_sign.world
         ````
         >Change the custom_world with the world name you have created
-    - In the case of a real robot:
-        ````shell
-        ros2 launch my_robot_bringup my_robot_bringup_hw.launch.py
-        ````    
+    - In the case of a real robot the bringup is already made when turned on the robot.
+      
 - to generate the map:
     - In the case of Virtual environment:
     ````shell
     ros2 launch my_robot_cartographer cartographer.launch.py
     ````
     >use_sim_time:=true when using Gazebo for Virtual simulation. Is true by default in cartographer.launch.py file
-    - In the case of real robot:
+    - In the case of real robot, we have first to initialize the robot POSE on the real map to zero-pose to be used as òrigin` in the map file:
     ````shell
     ros2 topic pub --once /reset_odom std_msgs/msg/Bool "{data: true}"
+    ````
+    - Later we can launch cartographer with:
+    ````shell
     ros2 launch my_robot_cartographer cartographer.launch.py use_sim_time:=false
     ````
 - Navigate on the world to store the map
@@ -111,7 +119,7 @@ The interesting actions used:
 - /navigate_to_pose
 - /follow_waypoints
 
-we need to install (already installed in our Dockerfile.robot):
+we need to install (already installed in our SSD custom environment):
 ````shell
 sudo apt install ros-humble-nav2-simple-commander
 sudo apt install ros-humble-tf-transformations
