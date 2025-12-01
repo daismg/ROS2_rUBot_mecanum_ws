@@ -53,46 +53,8 @@ With this configuration, both machines:
 
 - Are allowed to communicate over the network (ROS_LOCALHOST_ONLY=0).
 
-## 2. Why discovery sometimes fails (multicast vs unicast)
-ROS 2 with CycloneDDS uses DDS discovery to automatically find publishers and subscribers across machines. By default, discovery is based on UDP multicast in the given ROS domain:
 
-- Each participant sends multicast "I am here" messages.
-
-- Other participants in the same domain listen to these multicast messages and add the new participant to their peer list.
-
-In this lab setup, the following issue is observed:
-
-- Case A (works):
-
-    - Robot is powered on first.
-
-    - Robot bringup is started (nodes are running).
-
-    - PC is powered on afterwards.
-
-    - When ROS 2 commands (e.g. ros2 topic list) are launched on the PC, it discovers the robot's topics correctly.
-
-- Case B (problematic):
-
-    - PC is powered on first, ROS 2 environment is used (daemon starts, DDS participants created).
-
-    - Robot is powered on later and bringup is started.
-
-    - The PC can ping the robot (192.168.1.14), but does not see any ROS 2 topics from the robot.
-
-    - Only after rebooting the PC (or restarting the ROS 2 daemon/DDS participants) the robot's topics become visible.
-
-This is typically caused by:
-
-- The WiFi router handling multicast in an unreliable way.
-
-- The order of startup of CycloneDDS participants and the router’s multicast behavior.
-
-- The ROS 2 daemon on the PC not properly detecting new participants under some network conditions.
-
-In short: IP connectivity is fine (ping works), but DDS multicast discovery is unreliable, depending on who starts first.
-
-## 3. Solution: CycloneDDS peer-to-peer unicast configuration
+## 2. CycloneDDS peer-to-peer unicast configuration
 To make the system robust and independent of multicast quirks and startup order, we explicitly configure CycloneDDS to use unicast peer discovery between the PC and the robot.
 
 With this configuration:
@@ -106,20 +68,11 @@ With this configuration:
 We will:
 
 - Store configuration files inside the ROS 2 workspace:
-
-````text
-/home/student/Desktop/ROS2_rUBot_mecanum_ws/config/cyclonedds_pc.xml
-/home/ubuntu/ROS2_rUBot_mecanum_ws/config/cyclonedds_robot.xml
-````
-- Set CYCLONEDDS_URI in .bashrc to point to these files.
-
-## 4. Unicast configuration
-On both the PC and the robot, we assume the ROS 2 workspace is:
-
-- Create a config directory inside the workspace:
-
-- CycloneDDS configuration file on the PC (/home/student/Desktop/ROS2_rUBot_mecanum_ws/config/cyclonedds_pc.xml) with the following content:
-
+    ````text
+    /home/student/Desktop/ROS2_rUBot_mecanum_ws/config/cyclonedds_pc.xml
+    /home/ubuntu/ROS2_rUBot_mecanum_ws/config/cyclonedds_robot.xml
+    ````
+- CycloneDDS configuration file for the PC `cyclonedds_pc.xml` with the following content:
     ````xml
     <?xml version="1.0" encoding="UTF-8" ?>
     <CycloneDDS>
@@ -144,8 +97,7 @@ On both the PC and the robot, we assume the ROS 2 workspace is:
 
     Peers: Here we tell the PC to directly contact the robot at 192.168.1.14 via unicast.
 
-- CycloneDDS configuration file on the robot. On the robot (192.168.1.14), at /home/ubuntu/ROS2_rUBot_mecanum_ws/config/cyclonedds_robot.xml, with the following content:
-
+- CycloneDDS configuration file for the robot. `cyclonedds_robot.xml` with the following content:
     ````xml
     <?xml version="1.0" encoding="UTF-8" ?>
     <CycloneDDS>
@@ -170,22 +122,43 @@ On both the PC and the robot, we assume the ROS 2 workspace is:
 
     Peers tells the robot to directly talk to the PC at 192.168.1.15.
 
-- Updating .bashrc to use these configs: We now need to tell CycloneDDS to load these XML files using the CYCLONEDDS_URI environment variable.
+- Update `.bashrc` to use these configs: We now need to tell CycloneDDS to load these XML files using the CYCLONEDDS_URI environment variable.
 
-    - On the PC: Edit the .bashrc for user student and add:
+    - On the PC: Edit the `.bashrc` for user student and verify it contains the following lines:
 
         ````bash
+        source /opt/ros/humble/setup.bash
+        source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+        source /home/student/Desktop/ROS2_rUBot_mecanum_ws/install/setup.bash
+        cd /home/student/Desktop/ROS2_rUBot_mecanum_ws
+        export GAZEBO_MODEL_PATH=/home/student/Desktop/ROS2_rUBot_mecanum_ws/src/my_robot_bringup/models:$GAZEBO_MODEL_PATH
+        export QT_QPA_PLATFORM=xcb           # Best for RVIZ2
+        export ROS_DOMAIN_ID=1               # group/domain ID
+        export ROS_LOCALHOST_ONLY=0          # allow communication with other machines
+        export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
         export CYCLONEDDS_URI=file:///home/student/Desktop/ROS2_rUBot_mecanum_ws/config/cyclonedds_pc.xml
         ````
-        >Make sure this line is after the RMW_IMPLEMENTATION=rmw_cyclonedds_cpp line.
-
     - On the robot:
 
         ````bash
+        source /opt/ros/humble/setup.bash
+        source /usr/share/colcon_argcomplete/hook/colcon-argcomplete.bash
+        source /home/ubuntu/ROS2_rUBot_mecanum_ws/install/setup.bash
+        cd /home/ubuntu/ROS2_rUBot_mecanum_ws
+        export GAZEBO_MODEL_PATH=/home/ubuntu/ROS2_rUBot_mecanum_ws/src/my_robot_bringup/models:$GAZEBO_MODEL_PATH
+        export QT_QPA_PLATFORM=xcb           # Best for RVIZ2
+        export ROS_DOMAIN_ID=1               # group/domain ID
+        export ROS_LOCALHOST_ONLY=0          # allow communication with other machines
+        export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
         export CYCLONEDDS_URI=file:///home/ubuntu/ROS2_rUBot_mecanum_ws/config/cyclonedds_robot.xml
         ````
+        > You will have to connect to the robot via SSH to edit its `.bashrc`.
+        > Sometimes you will have to regenerate the keys to connect to the raspberry pi. Type on a `cmd`terminal on the PC:
+        ````bash
+        ssh-keygen -R rUBot_IP_ADDRESS
+        ````
 
-## 5. How to use and test
+## 3. How to use and test
 - Start the robot:
 
 - Boot the PC.
@@ -210,7 +183,7 @@ On both the PC and the robot, we assume the ROS 2 workspace is:
         ````
         >If the unicast configuration is correct and the IP addresses are reachable, this setup should be very robust against router multicast issues and startup order.
 
-## 6. Adapting this setup to other robots/PCs
+## 4. Adapting this setup to other robots/PCs
 If you replicate this setup for multiple robots and PCs in the lab:
 
 Each robot and PC must have:

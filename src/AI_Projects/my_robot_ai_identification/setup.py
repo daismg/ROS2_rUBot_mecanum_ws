@@ -29,7 +29,7 @@ setup(
             'take_photo_exec = my_robot_ai_identification.take_photo:main',
             'takePhoto_detectSign_keras_exec = my_robot_ai_identification.takePhoto_detectSign_keras:main',
             'limo_rt_prediction_yolo_exec = my_robot_ai_identification.limo_rt_prediction_yolo:main',
-            'rubot_navigation_yolo_exec = my_robot_ai_identification.rubot_navigation_yolo:main',
+            'rubot_detection_yolo_exec = my_robot_ai_identification.rubot_detection_yolo:main',
         ],
     },
 )
