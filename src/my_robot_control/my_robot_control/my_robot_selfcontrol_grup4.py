@@ -86,8 +86,12 @@ class RobotSelfControl(Node):
         closest_distance, angle_closest_distance = min(custom_range)
 
         # Determine zone
-        if -45 <= angle_closest_distance <= 45:
+        if -20 <= angle_closest_distance <= 20:
             zone = "FRONT"
+        elif -45 <= angle_closest_distance < -20:
+            zone = "FRONT_RIGHT"
+        elif 20 < angle_closest_distance <= 45:
+            zone = "FRONT_LEFT"
         elif 45 < angle_closest_distance <= 110:
             zone = "LEFT"
         elif -110 <= angle_closest_distance < -45:
@@ -109,6 +113,12 @@ class RobotSelfControl(Node):
             if zone == "FRONT":
                 self._msg.linear.x = -self._forwardSpeed * self._speedFactor
                 self._msg.angular.z = self._rotationSpeed * self._speedFactor
+            elif zone == "FRONT_RIGHT":
+                self._msg.linear.y = self._forwardSpeed * self._speedFactor
+                self._msg.angular.z = self._rotationSpeed * self._speedFactor
+            elif zone == "FRONT_LEFT":
+                self._msg.linear.y = -self._forwardSpeed * self._speedFactor
+                self._msg.angular.z = -self._rotationSpeed * self._speedFactor
             elif zone == "LEFT":
                 self._msg.linear.x = -self._forwardSpeed * self._speedFactor
                 self._msg.angular.z = -self._rotationSpeed * self._speedFactor
