@@ -150,3 +150,32 @@ To launch the robot Custom Navigation with signal detection, use:
     ````shell
     rqt_image_view /inference_result
     ````
+
+## **5. Distance with 3D-Camera**
+
+We are using a RealSense D435i camera that provides RGB and Depth images. The depth image is used to compute the distance from the robot to the detected traffic sign.
+
+- Launch the RealSense camera node:
+    ````shell
+    ros2 launch realsense2_camera rs_launch.py \
+    initial_reset:=true \
+    enable_color:=true \
+    enable_depth:=true \
+    align_depth:=true \
+    enable_sync:=false \
+    pointcloud.enable:=false \
+    depth_module.depth_profile:=640x360x15 \
+    rgb_camera.color_profile:=640x480x30 \
+    enable_infra1:=false enable_infra2:=false
+    ````
+- The depth image topic is: `/camera/aligned_depth_to_color/image_raw`
+- Launch the node to see the distance of a point in the RGB image to a robot frame:
+    ````shell
+    ros2 launch my_camera_tools image_point_distance.launch.py \
+    depth_topic:=/camera/aligned_depth_to_color/image_raw \
+    camera_info_topic:=/camera/color/camera_info \
+    camera_frame:=camera_color_optical_frame \
+    target_frame:=odom \
+    u:=320 v:=240
+    ````
+- You can change the pixel coordinates `u` and `v` to measure the distance to other points in the image.

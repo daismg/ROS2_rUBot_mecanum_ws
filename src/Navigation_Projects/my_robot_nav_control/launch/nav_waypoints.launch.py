@@ -14,7 +14,7 @@ def generate_launch_description():
     pkg_dir = get_package_share_directory('my_robot_nav_control')
     
     # Construeix la ruta al fitxer de paràmetres YAML
-    params_file = os.path.join(pkg_dir, 'config', 'waypoints_params.yaml')
+    params_file = os.path.join(pkg_dir, 'config', 'waypoints_paramsV2.yaml')
 
     # Create the node action, passing the waypoints as a parameter.
     navigation_node = Node(

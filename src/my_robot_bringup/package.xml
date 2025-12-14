@@ -13,6 +13,7 @@
   <exec_depend>my_robot_driver</exec_depend>
   <exec_depend>serial_motor_msgs</exec_depend>
 
+  <exec_depend>xacro</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>rplidar_ros</exec_depend>
