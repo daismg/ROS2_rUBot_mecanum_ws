@@ -11,12 +11,21 @@ class WallFollower(Node):
     def __init__(self):
         super().__init__('wall_follower_node')
 
+<<<<<<< HEAD
         # Paràmetres
         self.declare_parameter('distance_limit', 0.30)   # distància desitjada a la paret dreta
         self.declare_parameter('forward_speed', 0.40)    # velocitat lineal base
         self.declare_parameter('lateral_gain', 0.6)      # guany per corregir lateral (vy = -gain * error)
         self.declare_parameter('time_to_stop', 30.0)     # aturada automàtica
         self.declare_parameter('tolerance', 0.04)        # banda de tolerància al voltant de distance_limit
+=======
+        # Parameters
+        self.declare_parameter('distance_limit', 0.5)    # desired distance to right wall
+        self.declare_parameter('forward_speed', 0.20)    # linear speed
+        self.declare_parameter('turn_speed', 0.40)       # angular speed
+        self.declare_parameter('time_to_stop', 30.0)     # auto-stop
+        self.declare_parameter('tolerance', 0.05)        # band around base_distance (RIGHT)
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f
 
         self.base_distance = float(self.get_parameter('distance_limit').value)
         self.v_lin = float(self.get_parameter('forward_speed').value)
@@ -117,6 +126,7 @@ class WallFollower(Node):
         twist = Twist()
         action = ""
 
+<<<<<<< HEAD
         # Regla de prioritat: tria el sector amb obstacle més proper
         sectors = {
             "FRONT": min_front,
@@ -127,13 +137,29 @@ class WallFollower(Node):
         }
         closest_region = min(sectors, key=sectors.get)
         closest_dist = sectors[closest_region]
+=======
+        #----------------------------------------------------------
+        # RULE 1: FRONT obstacle → turn left
+        #----------------------------------------------------------
+        if min_front < self.base_distance:
+            twist.linear.x = 0.0
+            twist.linear.y = 0.0
+            twist.angular.z = self.v_ang * 2.0
+            action = f"FRONT {min_front:.2f} m → turn LEFT"
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f
 
         # Moviment holonòmic pur (sense gir): linear.x endavant/enrere, linear.y esquerra/dreta
         # 1) FRONT → moure cap a l’esquerra (evitar xocar)
         if closest_region == "FRONT" and closest_dist < self.base_distance:
             twist.linear.x = 0.0
+<<<<<<< HEAD
             twist.linear.y = +self.v_lin
             action = f"FRONT {min_front:.2f} m → LEFT"
+=======
+            twist.linear.y = 0.0
+            twist.angular.z = self.v_ang * 1.0
+            action = f"FRONT-RIGHT {min_fr_right:.2f} m → turn LEFT"
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f
 
         # 2) FRONT-RIGHT → diagonals cap endavant-esquerra
         elif closest_region == "FR_RIGHT" and closest_dist < self.base_distance:
@@ -151,6 +177,7 @@ class WallFollower(Node):
                 action = (
                     f"RIGHT ~OK ({min_right:.2f} m ≈ {self.base_distance:.2f}±{self.tol:.2f}) → STRAIGHT"
                 )
+<<<<<<< HEAD
             else:
                 # Correcció lateral proporcional (cap a la paret si massa lluny, allunya si massa a prop)
                 twist.linear.x = self.v_lin
@@ -160,10 +187,30 @@ class WallFollower(Node):
                 if twist.linear.y >  max_lat: twist.linear.y =  max_lat
                 if twist.linear.y < -max_lat: twist.linear.y = -max_lat
                 dir_txt = "LEFT" if twist.linear.y > 0 else "RIGHT"
+=======
+
+            elif error < 0:
+                # Too close to right wall → slow forward + stronger left turn
+                twist.linear.x = self.v_lin * 0.3
+                twist.linear.y = self.v_lin * 0.3
+                twist.angular.z = self.v_ang * 1.0
+                action = (
+                    f"RIGHT too CLOSE ({min_right:.2f} m < "
+                    f"{self.base_distance:.2f}-{self.tol:.2f}) → "
+                    f"forward + strong LEFT turn"
+                )
+
+            else:
+                # Too far from right wall → slow forward + stronger right turn
+                twist.linear.x = self.v_lin * 0.3
+                twist.linear.y = -self.v_lin * 0.3
+                twist.angular.z = -self.v_ang * 1.0
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f
                 action = (
                     f"RIGHT error {error:+.2f} m → forward + lateral {dir_txt} (vy={twist.linear.y:.2f})"
                 )
 
+<<<<<<< HEAD
         # 4) BACK-RIGHT → diagonals cap endavant-dreta (reconnectar amb la paret dreta)
         elif math.isfinite(min_back_right):
             twist.linear.x = +self.v_lin * 0.6
@@ -181,6 +228,21 @@ class WallFollower(Node):
             twist.linear.x = self.v_lin * 0.6
             twist.linear.y = 0.0
             action = "No wall reliably detected → slow forward"
+=======
+        #----------------------------------------------------------
+        # RULE 4: BACK-RIGHT → only if it is the most relevant wall
+        #----------------------------------------------------------
+        elif math.isfinite(min_back_right) and (
+            not math.isfinite(min_right) or min_back_right <= min_right
+        ):
+            twist.linear.x = self.v_lin * 0.1
+            twist.linear.y = -self.v_lin * 0.3
+            twist.angular.z = -2.0 * self.v_ang
+            action = (
+                f"BACK-RIGHT {min_back_right:.2f} m → "
+                f"very slow + STRONG RIGHT turn (2*w)"
+            )
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f
 
         # Cap gir en cap cas
         twist.angular.z = 0.0
@@ -203,6 +265,7 @@ class WallFollower(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = WallFollower()
+<<<<<<< HEAD
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
@@ -218,3 +281,8 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+=======
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+>>>>>>> 068d75202fdfafcd792b77daa6594e60f3a5e42f

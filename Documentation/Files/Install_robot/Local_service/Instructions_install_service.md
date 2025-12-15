@@ -127,3 +127,29 @@ The workspace is compiled only once (it won’t repeat unnecessarily)
     sudo journalctl -u my_robot_web -f
     ````
 - Reboot and verify all services start automatically
+
+### Service modification
+
+To modify the my_robot.service:
+- Edit start_robot.sh:
+    ```bash
+    nano /home/ubuntu/start_robot.sh
+    ```
+- Make changes
+- Stop the service:
+    ```bash
+    sudo systemctl stop my_robot.service
+    ```
+- Launch manually to test:
+    ```bash
+    /home/ubuntu/start_robot.sh
+    ```
+- restart the service if everything works:
+    ```bash
+    sudo systemctl start my_robot.service
+    ```
+- Check status and logs:
+    ```bash
+    sudo systemctl status my_robot.service
+    sudo journalctl -u my_robot -f
+    ```

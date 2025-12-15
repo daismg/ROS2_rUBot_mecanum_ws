@@ -64,29 +64,34 @@ To proceed with the signal identification we first bringup the robot and navigat
         ````
         > Be sure the Odometry message is zero when starting the navigation.
 
-## **3. Signal prediction**
+## **3. Signal detection**
 
-You can make a prediction of the signal that the robot find on its path to target pose:
-- for 1 test image (use ``picture_prediction_yolo.py``). 
-- for video images from robot camera when moving to target (use ``rt_prediction_yolo.py``)
+You can make a detection of the signal that the robot find on its path to target pose:
+- for 1 test image (use ``picture_detection_yolo.py``). 
+- for video images from robot camera when moving to target (use ``rubot_detection_yolo.py``)
+- The schematic nodes, topics and messages are shown below:
+    ![](./Images/07_Yolo/09_yolo_detection_topics.png)
 
 **Software** test in Gazebo: 
-- Use the ``limo_rt_prediction_yolo.py`` after the navigation node is launched.
+- Use the ``rubot_detection_yolo.py`` after the navigation node is launched.
     ````shell
-    ros2 run my_robot_ai_identification limo_rt_prediction_yolo_exec
+    ros2 run my_robot_ai_identification rubot_detection_yolo_exec
     ````
     > You have to verify the model path to '/home/user/ROS2_rUBot_mecanum_ws/src/AI_Projects/my_robot_ai_identification/models/yolov8n_custom.pt
 
-    > If you are using rUBot robot change the exec to `rubot_rt_prediction_yolo_exec`
-
     > Verify also the the camera topic if you are using rUBot or Limo
 
-- To see the image with prediction on RVIZ2, select a new Image message on topic /inference_result
+- To see the image with prediction:
+    - on RVIZ2, select a new Image message on topic /inference_result
     ![](./Images/07_Yolo/11_prediction_sw.png)
     ![](./Images/07_Yolo/11_prediction_sw2.png)
+    - or use ``rqt_image_view`` in a new terminal
+        ````shell
+        rqt_image_view /inference_result
+        ````
 
-**Hardware** Test in real LIMO robot:
-- If you want to execute on Limo robot, you have to install on the Limo robot container:
+**Hardware** Test in real robot:
+- If you want to execute on real `LIMO robot`, you have to install and execute on the Limo robot container:
     ````shell
     apt update
     apt install python3-pip
@@ -102,29 +107,75 @@ You can make a prediction of the signal that the robot find on its path to targe
     apt install build-essential
     colcon build
     source install/setup.bash
-    ros2 run my_robot_ai_identification rt_prediction_yolo_exec
-    ````
-    
-- Run The real-time prediction:
-    ````shell
     ros2 run my_robot_ai_identification limo_rt_prediction_yolo_exec
     ````
-    
-## **5. Robot actuation after prediction**
 
-Consider:
-- Predefined map positions of traffic signs. These coordinates MUST be in the same reference frame as the robot's odometry (/odom) or /map (depending on your setup).
-- If YOLO detects a sign AND the robot is within "front_distance" parameter value of the corresponding sign position, then the robot reacts.
-- Specify the sign positions in a `yolo_signs.yaml` file as follows:
-    ```yaml
-    sign_positions:
-      STOP:      [2.30, -1.00]   # STOP sign position (x, y)
-      Ceda:      [5.00,  0.20]   # Yield (Ceda el paso)
-      Derecha:   [7.10,  1.40]   # Turn right
-      Izquierda: [7.10, -1.40]   # Turn left
-      Prohibido: [9.00,  0.00]   # No entry / forbidden
-    ````
-- To launch the robot actuation node after prediction, use:
+- If you want to execute on real `rUBot robot`, you have to execute:
     ````shell
-    ros2 launch my_robot_ai_identification rubot_navigation_yolo.launch.py
+    ros2 launch my_robot_ai_identification rubot_detection_wp_yolo.launch.py
     ````
+The main characteristics of this `object_detection` node are:
+- It uses the YOLOv8 model previously trained to detect the traffic signs.
+- Computes its distance from the robot using:
+    - the depth image from the camera (if available)
+    - or using the information of the traffic signal location in the map (`yolo_signals.yaml` file in `config` folder)
+- Publishes the image wit the detected sign bounding box in the `/inference_result` topic
+- Publishes a new waypoint in the `/traffic_waypoint` topic when a `left`or `right` sign is detected
+
+You can see that this `object_detection` node is:
+- usefull for  `stop`, `ceda` and `forbidden` signs, because the robot has to stop the movement
+- NOT usefull for `turn right` and `turn left` signs, because the node publishes a new `waypoint` who is not able to be automatically integrated in the navigation2 stack.
+
+We have to create a new `custom_nav2` node that can integrate the new waypoint in the navigation2 stack.
+
+## **4. Custom Navigation with signal detection**
+
+Considering the previous `object_detection` node, we have created a new `custom_nav2` node that:
+- Reads the `initial_pose`, `waypoint` and `target_pose` from a YAML file
+- Subscribes to `/traffic_waypoint` topic where the `object_detection` node publishes the waypoint when a sign is detected
+- Calls the `BasicNavigator.goToPose()` method (that publishes to `/navigate_to_pose` topic) to go first to the waypoint (YOLO or YAML) and then to the target_pose.
+
+    ![](./Images/07_Yolo/12_yolo_custom_nav2.png)
+
+To launch the robot Custom Navigation with signal detection, use:
+- Launch the `object_detection` node with:
+    ````shell
+    ros2 launch my_robot_ai_identification rubot_detection_wp_yolo.launch.py topic:=/image_raw front_distance:=0.3 Izquierda:=[1.80, 0.0]
+    ````
+- Launch the `custom_nav2` node with:
+    ````shell
+    ros2 launch my_robot_nav_control rubot_nav2_wp_yolo.launch.py target_pose:=[8.0, -0.5, 1.57]
+    ````
+- use ``rqt_image_view`` in a new terminal
+    ````shell
+    rqt_image_view /inference_result
+    ````
+
+## **5. Distance with 3D-Camera**
+
+We are using a RealSense D435i camera that provides RGB and Depth images. The depth image is used to compute the distance from the robot to the detected traffic sign.
+
+- Launch the RealSense camera node:
+    ````shell
+    ros2 launch realsense2_camera rs_launch.py \
+    initial_reset:=true \
+    enable_color:=true \
+    enable_depth:=true \
+    align_depth:=true \
+    enable_sync:=false \
+    pointcloud.enable:=false \
+    depth_module.depth_profile:=640x360x15 \
+    rgb_camera.color_profile:=640x480x30 \
+    enable_infra1:=false enable_infra2:=false
+    ````
+- The depth image topic is: `/camera/aligned_depth_to_color/image_raw`
+- Launch the node to see the distance of a point in the RGB image to a robot frame:
+    ````shell
+    ros2 launch my_camera_tools image_point_distance.launch.py \
+    depth_topic:=/camera/aligned_depth_to_color/image_raw \
+    camera_info_topic:=/camera/color/camera_info \
+    camera_frame:=camera_color_optical_frame \
+    target_frame:=odom \
+    u:=320 v:=240
+    ````
+- You can change the pixel coordinates `u` and `v` to measure the distance to other points in the image.

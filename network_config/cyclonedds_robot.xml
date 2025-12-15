@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CycloneDDS configuration for the ROBOT.
+
+  TEMPLATE for Robot5:
+    - Robot IP: 192.168.1.54
+    - PC IP:    192.168.1.55
+
+  ⚠️ ALUMNE:
+    - Substitueix aquestes IPs per les del teu robot i PC.
+-->
+<CycloneDDS>
+  <Domain id="any">
+
+    <General>
+      <!-- Bind CycloneDDS to this robot's IP -->
+      <NetworkInterfaceAddress>192.168.1.54</NetworkInterfaceAddress>
+      <AllowMulticast>true</AllowMulticast>
+    </General>
+
+    <Discovery>
+      <Peers>
+        <!-- PC IP for this pair -->
+        <Peer address="192.168.1.55"/>
+      </Peers>
+    </Discovery>
+
+  </Domain>
+</CycloneDDS>

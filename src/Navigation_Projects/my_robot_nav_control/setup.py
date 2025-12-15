@@ -24,9 +24,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'nav_target_exec = my_robot_nav_control.nav_target:main', # Canviat per al nou nom del fitxer
             'nav_waypoints_exec = my_robot_nav_control.nav_waypoints:main', # Canviat per al nou nom del fitxer
-            'nav_target0_exec = my_robot_nav_control.nav_target0:main',
+            'rubot_nav2_wp_yolo_exec = my_robot_nav_control.rubot_nav2_wp_yolo:main',
         ],
     },
 )
